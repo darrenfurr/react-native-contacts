@@ -108,30 +108,36 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
         String[] phones = null;
-        Integer[] phonesLabels = null;
+        String[] phonesLabels = null;
+        Integer[] phonesLabelsTypes = null;
         if (phoneNumbers != null) {
             numOfPhones = phoneNumbers.size();
             phones = new String[numOfPhones];
-            phonesLabels = new Integer[numOfPhones];
+            phonesLabels = new String[numOfPhones];
+            phonesLabelsTypes = new Integer[numOfPhones];
             for (int i = 0; i < numOfPhones; i++) {
                 phones[i] = phoneNumbers.getMap(i).getString("number");
                 String label = phoneNumbers.getMap(i).getString("label");
-                phonesLabels[i] = mapStringToPhoneType(label);
+                phonesLabels[i] = label;
+                phonesLabelsTypes[i] = mapStringToPhoneType(label);
             }
         }
 
         ReadableArray emailAddresses = contact.hasKey("emailAddresses") ? contact.getArray("emailAddresses") : null;
         int numOfEmails = 0;
         String[] emails = null;
-        Integer[] emailsLabels = null;
+        String[] emailsLabels = null;
+        Integer[] emailsLabelsTypes = null;
         if (emailAddresses != null) {
             numOfEmails = emailAddresses.size();
             emails = new String[numOfEmails];
-            emailsLabels = new Integer[numOfEmails];
+            emailsLabels = new String[numOfEmails];
+            emailsLabelsTypes = new Integer[numOfEmails];
             for (int i = 0; i < numOfEmails; i++) {
                 emails[i] = emailAddresses.getMap(i).getString("email");
                 String label = emailAddresses.getMap(i).getString("label");
-                emailsLabels[i] = mapStringToEmailType(label);
+                emailsLabels[i] = label;
+                emailsLabelsTypes[i] = mapStringToEmailType(label);
             }
         }
 
@@ -169,7 +175,11 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Phone.NUMBER, phones[i])
-                    .withValue(CommonDataKinds.Phone.TYPE, phonesLabels[i]);
+                    .withValue(CommonDataKinds.Phone.TYPE, phonesLabelsTypes[i]);
+            if (phonesLabelsTypes[i] == CommonDataKinds.Phone.TYPE_CUSTOM) {
+                op = op.withValue(CommonDataKinds.Phone.LABEL, phonesLabels[i]);
+            }
+
             ops.add(op.build());
         }
 
@@ -178,7 +188,10 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                     .withValue(CommonDataKinds.Email.ADDRESS, emails[i])
-                    .withValue(CommonDataKinds.Email.TYPE, emailsLabels[i]);
+                    .withValue(CommonDataKinds.Email.TYPE, emailsLabelsTypes[i]);
+            if (emailsLabelsTypes[i] == CommonDataKinds.Email.TYPE_CUSTOM) {
+                op = op.withValue(CommonDataKinds.Email.LABEL, emailsLabels[i]);
+            }
             ops.add(op.build());
         }
 
@@ -339,8 +352,9 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             case "mobile":
                 phoneType = CommonDataKinds.Phone.TYPE_MOBILE;
                 break;
+
             default:
-                phoneType = CommonDataKinds.Phone.TYPE_OTHER;
+                phoneType = CommonDataKinds.Phone.TYPE_CUSTOM;
                 break;
         }
         return phoneType;
@@ -363,7 +377,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                 emailType = CommonDataKinds.Email.TYPE_MOBILE;
                 break;
             default:
-                emailType = CommonDataKinds.Email.TYPE_OTHER;
+                emailType = CommonDataKinds.Email.TYPE_CUSTOM;
                 break;
         }
         return emailType;
