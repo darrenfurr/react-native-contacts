@@ -1,4 +1,6 @@
 # React Native Contacts
+DF 4/27/16 - Added support for Android/iOS custom phone/email labels
+
 To contribute read [CONTRIBUTING.md](https://github.com/rt2zz/react-native-contacts).
 
 Rx support with [react-native-contacts-rx](https://github.com/JeanLebrument/react-native-contacts-rx)
